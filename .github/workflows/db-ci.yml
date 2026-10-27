@@ -41,6 +41,7 @@ jobs:
         uses: liquibase/setup-liquibase@v1
         with:
           version: '4.33.0'
+          edition: 'oss'
 
       - name: Execute Forward & Rollback Verification
         run: |
