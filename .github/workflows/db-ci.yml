@@ -6,13 +6,13 @@ on:
   pull_request:
     paths:
       - 'changelogs/**'
+      - '.github/workflows/**'
 
 jobs:
   validate-schema-migrations:
     name: Test Migration & Rollback
     runs-on: ubuntu-latest
 
-    # Ephemeral database service container spun up exclusively for this run
     services:
       postgres:
         image: postgres:17
@@ -31,15 +31,22 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Install Liquibase
-        uses: liquibase/liquibase-github-action@v1.0.0
+      - name: Setup Java Runtime
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Liquibase CLI
+        uses: liquibase/setup-liquibase@v1
         with:
           version: '4.33.0'
+          edition: 'oss'
 
       - name: Execute Forward & Rollback Verification
         run: |
           liquibase --changelog-file=changelogs/db.changelog-master.xml \
-            --url=jdbc:postgresql://postgres:5432/ephemeral_db \
+            --url=jdbc:postgresql://localhost:5432/ephemeral_db \
             --username=postgres \
             --password=testpassword \
             update-testing-rollback
